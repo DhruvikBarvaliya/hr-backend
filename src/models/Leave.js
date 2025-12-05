@@ -10,7 +10,7 @@ const LeaveSchema = new Schema({
   halfDay: { type: Boolean, default: false },
   hours: { type: Number, default: 0 }, // if partial hours used
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-  reason: { type: String }
+  reason: { type: String },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Leave', LeaveSchema);

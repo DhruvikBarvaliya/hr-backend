@@ -1,5 +1,5 @@
-const logger = require('../utils/logger');
-const ApiError = require('../utils/ApiError');
+const logger = require('./logger');
+const ApiError = require('./ApiError');
 
 module.exports = (err, req, res, next) => { // eslint-disable-line no-unused-vars
   if (!err) return res.status(500).json({ error: 'Unknown error' });

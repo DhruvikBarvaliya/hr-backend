@@ -7,13 +7,17 @@ const logger = require('../utils/logger');
  * Create client (admin/hr only)
  */
 exports.createClient = async (req, res) => {
-  const { name, username, password, metadata } = req.body;
+  const {
+    name, username, password, metadata,
+  } = req.body;
 
   // optional uniqueness check by name or username
   const exists = await Client.findOne({ $or: [{ name }, { username }] });
   if (exists) throw new ApiError(400, 'Client with same name or username already exists');
 
-  const client = new Client({ name, username, owner: req.user?._id, metadata });
+  const client = new Client({
+    name, username, owner: req.user?._id, metadata,
+  });
   client.setPassword(password);
   await client.save();
 

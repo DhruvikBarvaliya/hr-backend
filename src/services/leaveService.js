@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
-const ApiError = require("../utils/ApiError");
-const Leave = require("../models/Leave");
-const Employee = require("../models/Employee");
-const logger = require("../utils/logger");
-const config = require("../config");
-const { countBusinessDays } = require("../utils/businessDays");
+const mongoose = require('mongoose');
+const ApiError = require('../utils/ApiError');
+const Leave = require('../models/Leave');
+const Employee = require('../models/Employee');
+const logger = require('../utils/logger');
+const config = require('../config');
+const { countBusinessDays } = require('../utils/businessDays');
 /**
  * computeLeaveDays: now business-day-aware and async
  * - halfDay => 0.5 (enforced)
@@ -27,24 +27,24 @@ exports.applyLeave = async (
     endDate,
     halfDay = false,
     hours = 0,
-    reason = "",
+    reason = '',
   },
-  appliedBy
+  appliedBy,
 ) => {
   // Validate employee exists
   const employee = await Employee.findOne({ empId: employeeId });
-  if (!employee) throw new ApiError(404, "Employee not found");
+  if (!employee) throw new ApiError(404, 'Employee not found');
 
   // compute days/hours
   const days = computeLeaveDays(startDate, endDate, halfDay);
   // For paid/sick: must have sufficient leaveBalance when approving. We allow creation, but optionally can pre-check.
-  if ((type === "paid" || type === "sick") && days <= 0) {
-    throw new ApiError(400, "Invalid leave duration");
+  if ((type === 'paid' || type === 'sick') && days <= 0) {
+    throw new ApiError(400, 'Invalid leave duration');
   }
 
   // If requesting to use flexible hours (hours > 0), ensure hours <= flexibleHoursAccrued at apply time (optional)
   if (hours > 0 && hours > employee.flexibleHoursAccrued) {
-    throw new ApiError(400, "Insufficient flexible hours available");
+    throw new ApiError(400, 'Insufficient flexible hours available');
   }
 
   const leave = await Leave.create({
@@ -55,10 +55,10 @@ exports.applyLeave = async (
     halfDay,
     hours,
     reason,
-    status: "pending",
+    status: 'pending',
   });
 
-  logger.info("Leave applied: %s by %s", leave._id, appliedBy || "system");
+  logger.info('Leave applied: %s by %s', leave._id, appliedBy || 'system');
   return leave;
 };
 
@@ -72,35 +72,34 @@ exports.resolveLeave = async ({ leaveId, approve, resolvedBy }) => {
   try {
     const leave = await Leave.findById(leaveId)
       .session(session)
-      .populate("employee");
-    if (!leave) throw new ApiError(404, "Leave not found");
-    if (leave.status !== "pending")
-      throw new ApiError(400, "Leave is not pending");
+      .populate('employee');
+    if (!leave) throw new ApiError(404, 'Leave not found');
+    if (leave.status !== 'pending') { throw new ApiError(400, 'Leave is not pending'); }
 
     if (!approve) {
-      leave.status = "rejected";
+      leave.status = 'rejected';
       leave.resolvedBy = resolvedBy;
       await leave.save({ session });
       await session.commitTransaction();
       session.endSession();
-      logger.info("Leave %s rejected by %s", leaveId, resolvedBy);
+      logger.info('Leave %s rejected by %s', leaveId, resolvedBy);
       return leave;
     }
 
     // approving
     const employee = await Employee.findById(leave.employee._id).session(
-      session
+      session,
     );
     const days = await computeLeaveDays(
       leave.startDate,
       leave.endDate,
-      leave.halfDay
+      leave.halfDay,
     );
 
     // For paid/sick leaves, ensure leaveBalance >= days
-    if (["paid", "sick"].includes(leave.type)) {
+    if (['paid', 'sick'].includes(leave.type)) {
       if (employee.leaveBalance < days) {
-        throw new ApiError(400, "Insufficient leave balance to approve");
+        throw new ApiError(400, 'Insufficient leave balance to approve');
       }
       employee.leaveBalance = Number((employee.leaveBalance - days).toFixed(2));
     }
@@ -108,14 +107,14 @@ exports.resolveLeave = async ({ leaveId, approve, resolvedBy }) => {
     // For flexible hours usage recorded in leave.hours
     if (leave.hours && leave.hours > 0) {
       if (employee.flexibleHoursAccrued < leave.hours) {
-        throw new ApiError(400, "Insufficient flexible hours to approve");
+        throw new ApiError(400, 'Insufficient flexible hours to approve');
       }
       employee.flexibleHoursAccrued = Number(
-        (employee.flexibleHoursAccrued - leave.hours).toFixed(2)
+        (employee.flexibleHoursAccrued - leave.hours).toFixed(2),
       );
     }
 
-    leave.status = "approved";
+    leave.status = 'approved';
     leave.resolvedBy = resolvedBy;
     leave.approvedAt = new Date();
 
@@ -124,7 +123,7 @@ exports.resolveLeave = async ({ leaveId, approve, resolvedBy }) => {
 
     await session.commitTransaction();
     session.endSession();
-    logger.info("Leave %s approved by %s", leaveId, resolvedBy);
+    logger.info('Leave %s approved by %s', leaveId, resolvedBy);
     return leave;
   } catch (err) {
     await session.abortTransaction();
@@ -146,7 +145,7 @@ exports.listLeaves = async ({
   const q = {};
   if (employeeId) {
     const emp = await Employee.findOne({ empId: employeeId });
-    if (!emp) throw new ApiError(404, "Employee not found");
+    if (!emp) throw new ApiError(404, 'Employee not found');
     q.employee = emp._id;
   }
   if (status) q.status = status;
@@ -156,7 +155,7 @@ exports.listLeaves = async ({
 
   const items = await Leave.find(q)
     .limit(Math.min(limit, 1000))
-    .populate("employee");
+    .populate('employee');
   return items;
 };
 
@@ -165,7 +164,7 @@ exports.listLeaves = async ({
  */
 exports.accrueMonthlyForAll = async () => {
   const MAX = Number(
-    process.env.MAX_CARRY_FORWARD || config.maxCarryForward || 12
+    process.env.MAX_CARRY_FORWARD || config.maxCarryForward || 12,
   ); // default 12 days
   const employees = await Employee.find();
   const now = new Date();
@@ -177,20 +176,20 @@ exports.accrueMonthlyForAll = async () => {
     if (emp.leaveBalance > MAX) emp.leaveBalance = MAX;
     // add flexible hours
     emp.flexibleHoursAccrued = Number(
-      (emp.flexibleHoursAccrued + 6).toFixed(2)
+      (emp.flexibleHoursAccrued + 6).toFixed(2),
     ); // 6 hours per month
     emp.accrualHistory.push({
       date: now,
       addedLeaves,
       addedFlexibleHours: 6,
-      note: "Monthly accrual",
+      note: 'Monthly accrual',
     });
     await emp.save();
     logger.info(
-      "Accrued for %s: +%d leaves, +6 hours (new balance %s)",
+      'Accrued for %s: +%d leaves, +6 hours (new balance %s)',
       emp.empId,
       addedLeaves,
-      emp.leaveBalance
+      emp.leaveBalance,
     );
     return emp;
   });

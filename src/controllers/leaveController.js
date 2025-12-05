@@ -28,7 +28,11 @@ exports.resolve = async (req, res) => {
  * List leaves (query params supported)
  */
 exports.list = async (req, res) => {
-  const { employeeId, status, fromDate, toDate, limit } = req.query;
-  const items = await LeaveService.listLeaves({ employeeId, status, fromDate, toDate, limit: Number(limit) || 100 });
+  const {
+    employeeId, status, fromDate, toDate, limit,
+  } = req.query;
+  const items = await LeaveService.listLeaves({
+    employeeId, status, fromDate, toDate, limit: Number(limit) || 100,
+  });
   return res.json({ data: items });
 };

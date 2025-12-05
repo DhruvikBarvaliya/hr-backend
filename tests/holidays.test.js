@@ -1,7 +1,7 @@
 // basic skeleton; adapt to your auth flow
 const request = require('supertest');
-const app = require('../src/app');
 const mongoose = require('mongoose');
+const app = require('../src/app');
 const Holiday = require('../src/models/Holiday');
 
 describe('Holidays API (basic)', () => {
@@ -11,7 +11,9 @@ describe('Holidays API (basic)', () => {
     await mongoose.connect(process.env.MONGO_URI);
     await Holiday.deleteMany({});
     // create admin via register
-    const reg = await request(app).post('/api/v1/auth/register').send({ name: 'Admin', email: 'admin@t.com', password: 'P@ssw0rd', role: 'admin' });
+    const reg = await request(app).post('/api/v1/auth/register').send({
+      name: 'Admin', email: 'admin@t.com', password: 'P@ssw0rd', role: 'admin',
+    });
     adminToken = reg.body.token;
   });
 

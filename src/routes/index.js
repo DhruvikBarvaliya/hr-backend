@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 
 const router = express.Router();
 
@@ -11,13 +11,13 @@ const router = express.Router();
  *       200:
  *         description: pong
  */
-router.get("/ping", (req, res) => res.json({ pong: true }));
+router.get('/ping', (req, res) => res.json({ pong: true }));
 
 // mount feature routers
-router.use("/auth", require("./auth"));
-router.use("/employees", require("./employees"));
-router.use("/leaves", require("./leaves"));
-router.use("/holidays", require("./holidays"));
-router.use("/clients", require("./clients"));
+router.use('/auth', require('./auth'));
+router.use('/employees', require('./employees'));
+router.use('/leaves', require('./leaves'));
+router.use('/holidays', require('./holidays'));
+router.use('/clients', require('./clients'));
 
 module.exports = router;

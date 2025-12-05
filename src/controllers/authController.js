@@ -7,15 +7,24 @@ function makeToken(user) {
 }
 
 exports.register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const {
+    name, email, password, role,
+  } = req.body;
   const exists = await User.findOne({ email });
   if (exists) return res.status(400).json({ error: 'User already exists' });
 
-  const user = new User({ name, email, password, role });
+  const user = new User({
+    name, email, password, role,
+  });
   await user.save();
 
   const token = makeToken(user);
-  return res.status(201).json({ user: { id: user._id, name: user.name, email: user.email, role: user.role }, token });
+  return res.status(201).json({
+    user: {
+      id: user._id, name: user.name, email: user.email, role: user.role,
+    },
+    token,
+  });
 };
 
 exports.login = async (req, res) => {
@@ -27,5 +36,10 @@ exports.login = async (req, res) => {
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
   const token = makeToken(user);
-  return res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+  return res.json({
+    token,
+    user: {
+      id: user._id, name: user.name, email: user.email, role: user.role,
+    },
+  });
 };

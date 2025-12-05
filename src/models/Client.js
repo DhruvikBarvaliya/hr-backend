@@ -9,7 +9,7 @@ const ClientSchema = new Schema({
   username: { type: String, required: true },
   passwordEncrypted: { type: String, required: true },
   owner: { type: Schema.Types.ObjectId, ref: 'User' }, // who created this client
-  metadata: { type: Schema.Types.Mixed, default: {} }
+  metadata: { type: Schema.Types.Mixed, default: {} },
 }, { timestamps: true });
 
 ClientSchema.methods.setPassword = function setPassword(raw) {

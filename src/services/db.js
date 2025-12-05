@@ -9,7 +9,7 @@ async function connectDB() {
     autoIndex: false,
     maxPoolSize: 10,
     serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000
+    socketTimeoutMS: 45000,
   });
   logger.info('MongoDB connected');
 }

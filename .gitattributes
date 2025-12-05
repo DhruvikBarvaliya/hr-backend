@@ -1,0 +1,9 @@
+# enforce LF line endings in repo
+* text=auto eol=lf
+
+# keep certain binary files untouched
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.zip binary

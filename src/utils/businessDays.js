@@ -93,8 +93,8 @@ async function countBusinessDays(startInput, endInput) {
   const holidays = await Holiday.find({
     date: {
       $gte: start,
-      $lte: new Date(end.getTime() + (24 * 60 * 60 * 1000) - 1)
-    }
+      $lte: new Date(end.getTime() + (24 * 60 * 60 * 1000) - 1),
+    },
   }).lean();
 
   const holidaySet = new Set(holidays.map((h) => dateToYMD(h.date)));
@@ -130,8 +130,8 @@ async function listBusinessDays(startInput, endInput) {
   const holidays = await Holiday.find({
     date: {
       $gte: start,
-      $lte: new Date(end.getTime() + (24 * 60 * 60 * 1000) - 1)
-    }
+      $lte: new Date(end.getTime() + (24 * 60 * 60 * 1000) - 1),
+    },
   }).lean();
   const holidaySet = new Set(holidays.map((h) => dateToYMD(h.date)));
 
@@ -152,5 +152,5 @@ module.exports = {
   isHolidayDate,
   isBusinessDay,
   countBusinessDays,
-  listBusinessDays
+  listBusinessDays,
 };

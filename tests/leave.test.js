@@ -1,6 +1,6 @@
 const request = require('supertest');
-const app = require('../src/app');
 const mongoose = require('mongoose');
+const app = require('../src/app');
 const User = require('../src/models/User');
 const Employee = require('../src/models/Employee');
 const Leave = require('../src/models/Leave');
@@ -23,18 +23,20 @@ describe('Leave flows', () => {
       name: 'Admin',
       email: 'admin@test.com',
       password: 'P@ssw0rd',
-      role: 'admin'
+      role: 'admin',
     });
     adminToken = adminRes.body.token;
 
     // create employee user + employee profile
-    const empProfile = await Employee.create({ empId: 'T100', name: 'Test Emp', email: 'te@test.com', monthlyAccruedLeaves: 1, leaveBalance: 2, flexibleHoursAccrued: 6 });
+    const empProfile = await Employee.create({
+      empId: 'T100', name: 'Test Emp', email: 'te@test.com', monthlyAccruedLeaves: 1, leaveBalance: 2, flexibleHoursAccrued: 6,
+    });
     emp = empProfile;
     const empUser = await request(app).post('/api/v1/auth/register').send({
       name: 'EmpUser',
       email: 'emp@test.com',
       password: 'P@ssw0rd',
-      role: 'employee'
+      role: 'employee',
     });
     // link employee to user
     await User.updateOne({ email: 'emp@test.com' }, { employee: emp._id });
@@ -55,7 +57,7 @@ describe('Leave flows', () => {
         startDate: new Date().toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         halfDay: true,
-        reason: 'doctor'
+        reason: 'doctor',
       });
     expect(res.statusCode).toBe(201);
     expect(res.body.data).toHaveProperty('status', 'pending');

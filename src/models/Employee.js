@@ -6,7 +6,7 @@ const AccrualHistorySchema = new Schema({
   date: { type: Date, required: true },
   addedLeaves: { type: Number, default: 0 },
   addedFlexibleHours: { type: Number, default: 0 },
-  note: { type: String }
+  note: { type: String },
 }, { _id: false });
 
 const EmployeeSchema = new Schema({
@@ -22,7 +22,7 @@ const EmployeeSchema = new Schema({
   monthlyAccruedLeaves: { type: Number, default: 1 }, // accrual per month
   leaveBalance: { type: Number, default: 0 }, // in days (can be fractional, e.g., 0.5)
   flexibleHoursAccrued: { type: Number, default: 0 }, // in hours
-  accrualHistory: { type: [AccrualHistorySchema], default: [] }
+  accrualHistory: { type: [AccrualHistorySchema], default: [] },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Employee', EmployeeSchema);

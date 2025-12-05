@@ -7,11 +7,11 @@ const options = {
     info: {
       title: 'HR Backend API',
       version: '1.0.0',
-      description: 'API documentation for HR backend'
+      description: 'API documentation for HR backend',
     },
-    servers: [{ url: 'http://localhost:4000', description: 'Local server' }]
+    servers: [{ url: 'http://localhost:4000', description: 'Local server' }],
   },
-  apis: ['./src/routes/*.js', './src/models/*.js'] // JSDoc comments will go here
+  apis: ['./src/routes/*.js', './src/models/*.js'], // JSDoc comments will go here
 };
 
 const spec = swaggerJSDoc(options);

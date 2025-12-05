@@ -63,7 +63,9 @@ exports.deleteHoliday = async (req, res) => {
  * List holidays (filter by year/month optional)
  */
 exports.listHolidays = async (req, res) => {
-  const { year, month, limit = 200, page = 1 } = req.query;
+  const {
+    year, month, limit = 200, page = 1,
+  } = req.query;
   const q = {};
   if (year) {
     const y = Number(year);
