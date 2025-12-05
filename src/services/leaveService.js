@@ -36,13 +36,15 @@ exports.applyLeave = async (
   if (!employee) throw new ApiError(404, 'Employee not found');
 
   // compute days/hours
-  const days = computeLeaveDays(startDate, endDate, halfDay);
-  // For paid/sick: must have sufficient leaveBalance when approving. We allow creation, but optionally can pre-check.
+  const days = await computeLeaveDays(startDate, endDate, halfDay);
+  // For paid/sick: must have sufficient leaveBalance when approving.
+  // We allow creation, but optionally can pre-check.
   if ((type === 'paid' || type === 'sick') && days <= 0) {
     throw new ApiError(400, 'Invalid leave duration');
   }
 
-  // If requesting to use flexible hours (hours > 0), ensure hours <= flexibleHoursAccrued at apply time (optional)
+  // If requesting to use flexible hours (hours > 0),
+  // ensure hours <= flexibleHoursAccrued at apply time (optional)
   if (hours > 0 && hours > employee.flexibleHoursAccrued) {
     throw new ApiError(400, 'Insufficient flexible hours available');
   }
@@ -74,7 +76,9 @@ exports.resolveLeave = async ({ leaveId, approve, resolvedBy }) => {
       .session(session)
       .populate('employee');
     if (!leave) throw new ApiError(404, 'Leave not found');
-    if (leave.status !== 'pending') { throw new ApiError(400, 'Leave is not pending'); }
+    if (leave.status !== 'pending') {
+      throw new ApiError(400, 'Leave is not pending');
+    }
 
     if (!approve) {
       leave.status = 'rejected';
@@ -165,34 +169,37 @@ exports.listLeaves = async ({
 exports.accrueMonthlyForAll = async () => {
   const MAX = Number(
     process.env.MAX_CARRY_FORWARD || config.maxCarryForward || 12,
-  ); // default 12 days
+  );
   const employees = await Employee.find();
   const now = new Date();
 
-  const ops = employees.map(async (emp) => {
-    const addedLeaves = emp.monthlyAccruedLeaves || 1;
-    emp.leaveBalance = Number((emp.leaveBalance + addedLeaves).toFixed(2));
-    // cap
-    if (emp.leaveBalance > MAX) emp.leaveBalance = MAX;
-    // add flexible hours
-    emp.flexibleHoursAccrued = Number(
-      (emp.flexibleHoursAccrued + 6).toFixed(2),
-    ); // 6 hours per month
-    emp.accrualHistory.push({
+  // We mutate Mongoose docs here (intentional). Disable rule locally.
+  /* eslint-disable no-param-reassign */
+  const ops = employees.map(async (empDoc) => {
+    const addedLeaves = empDoc.monthlyAccruedLeaves || 1;
+    empDoc.leaveBalance = Number(
+      (empDoc.leaveBalance + addedLeaves).toFixed(2),
+    );
+    if (empDoc.leaveBalance > MAX) empDoc.leaveBalance = MAX;
+    empDoc.flexibleHoursAccrued = Number(
+      (empDoc.flexibleHoursAccrued + 6).toFixed(2),
+    );
+    empDoc.accrualHistory.push({
       date: now,
       addedLeaves,
       addedFlexibleHours: 6,
       note: 'Monthly accrual',
     });
-    await emp.save();
+    await empDoc.save();
     logger.info(
-      'Accrued for %s: +%d leaves, +6 hours (new balance %s)',
-      emp.empId,
+      'Accrued for %s: +%d leaves, +6 hours (new %s)',
+      empDoc.empId,
       addedLeaves,
-      emp.leaveBalance,
+      empDoc.leaveBalance,
     );
-    return emp;
+    return empDoc;
   });
+  /* eslint-enable no-param-reassign */
 
   await Promise.all(ops);
   return { count: employees.length };

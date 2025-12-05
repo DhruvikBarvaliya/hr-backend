@@ -29,10 +29,15 @@ describe('Leave flows', () => {
 
     // create employee user + employee profile
     const empProfile = await Employee.create({
-      empId: 'T100', name: 'Test Emp', email: 'te@test.com', monthlyAccruedLeaves: 1, leaveBalance: 2, flexibleHoursAccrued: 6,
+      empId: 'T100',
+      name: 'Test Emp',
+      email: 'te@test.com',
+      monthlyAccruedLeaves: 1,
+      leaveBalance: 2,
+      flexibleHoursAccrued: 6,
     });
     emp = empProfile;
-    const empUser = await request(app).post('/api/v1/auth/register').send({
+    await request(app).post('/api/v1/auth/register').send({
       name: 'EmpUser',
       email: 'emp@test.com',
       password: 'P@ssw0rd',
@@ -40,7 +45,9 @@ describe('Leave flows', () => {
     });
     // link employee to user
     await User.updateOne({ email: 'emp@test.com' }, { employee: emp._id });
-    const login = await request(app).post('/api/v1/auth/login').send({ email: 'emp@test.com', password: 'P@ssw0rd' });
+    const login = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'emp@test.com', password: 'P@ssw0rd' });
     empToken = login.body.token;
   });
 
@@ -49,7 +56,8 @@ describe('Leave flows', () => {
   });
 
   test('employee can apply for a half-day leave', async () => {
-    const res = await request(app).post('/api/v1/leaves/apply')
+    const res = await request(app)
+      .post('/api/v1/leaves/apply')
       .set('Authorization', `Bearer ${empToken}`)
       .send({
         employeeId: 'T100',
@@ -65,7 +73,8 @@ describe('Leave flows', () => {
 
   test('admin can approve the leave', async () => {
     const pending = await Leave.findOne({}).exec();
-    const res = await request(app).post('/api/v1/leaves/resolve')
+    const res = await request(app)
+      .post('/api/v1/leaves/resolve')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ leaveId: pending._id.toString(), approve: true });
     expect(res.statusCode).toBe(200);

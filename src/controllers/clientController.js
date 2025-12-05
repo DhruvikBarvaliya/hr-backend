@@ -16,12 +16,19 @@ exports.createClient = async (req, res) => {
   if (exists) throw new ApiError(400, 'Client with same name or username already exists');
 
   const client = new Client({
-    name, username, owner: req.user?._id, metadata,
+    name,
+    username,
+    owner: req.user?._id,
+    metadata,
   });
   client.setPassword(password);
   await client.save();
 
-  logger.info('Client created %s by %s', client._id, req.user?.email || 'system');
+  logger.info(
+    'Client created %s by %s',
+    client._id,
+    req.user?.email || 'system',
+  );
   return res.status(201).json({ data: client.toSafeObject() });
 };
 
@@ -67,7 +74,10 @@ exports.listClients = async (req, res) => {
     filter.$or = [{ name: re }, { username: re }];
   }
 
-  const items = await Client.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
+  const items = await Client.find(filter)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(Number(limit));
   // return safe object (no passwords)
   const safe = items.map((c) => c.toSafeObject());
   return res.json({ data: safe });
@@ -83,5 +93,7 @@ exports.getClientSecret = async (req, res) => {
   if (!client) throw new ApiError(404, 'Client not found');
 
   const secret = client.getPassword();
-  return res.json({ data: { id: client._id, username: client.username, password: secret } });
+  return res.json({
+    data: { id: client._id, username: client.username, password: secret },
+  });
 };

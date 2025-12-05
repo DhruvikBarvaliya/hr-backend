@@ -4,13 +4,16 @@ const { encrypt, decrypt } = require('../utils/crypto');
 
 const { Schema } = mongoose;
 
-const ClientSchema = new Schema({
-  name: { type: String, required: true, trim: true },
-  username: { type: String, required: true },
-  passwordEncrypted: { type: String, required: true },
-  owner: { type: Schema.Types.ObjectId, ref: 'User' }, // who created this client
-  metadata: { type: Schema.Types.Mixed, default: {} },
-}, { timestamps: true });
+const ClientSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    username: { type: String, required: true },
+    passwordEncrypted: { type: String, required: true },
+    owner: { type: Schema.Types.ObjectId, ref: 'User' }, // who created this client
+    metadata: { type: Schema.Types.Mixed, default: {} },
+  },
+  { timestamps: true },
+);
 
 ClientSchema.methods.setPassword = function setPassword(raw) {
   this.passwordEncrypted = encrypt(raw);

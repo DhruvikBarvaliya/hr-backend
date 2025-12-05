@@ -7,7 +7,7 @@ const config = require('./config');
 const logger = require('./utils/logger');
 const setupSwagger = require('./swagger/swagger');
 const { connectDB, closeDB } = require('./services/db'); // see note below
-const errorHandler = require('./middlewares/errorHandler');
+const errorHandler = require('./utils/errorHandler');
 const scheduler = require('./services/scheduler');
 
 const app = express();

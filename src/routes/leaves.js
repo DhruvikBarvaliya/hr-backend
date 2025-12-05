@@ -1,8 +1,11 @@
+// src/routes/leaves.js
 const express = require('express');
 const wrap = require('../utils/wrap');
 const auth = require('../middlewares/auth');
 const permit = require('../middlewares/roles');
 const leaveCtrl = require('../controllers/leaveController');
+const ApiError = require('../utils/ApiError'); // added
+const Employee = require('../models/Employee'); // move require to top
 
 const router = express.Router();
 
@@ -15,11 +18,12 @@ router.post('/resolve', auth, permit('hr', 'manager', 'admin'), wrap(leaveCtrl.r
 // List leaves (admin/hr/manager can list; employees can list their own)
 router.get('/', auth, wrap(async (req, res, next) => {
   const { user } = req;
-  // if employee and no employeeId query, force employeeId
   if (user.role === 'employee' && !req.query.employeeId) {
-    // ensure user has employee linked
     if (!user.employee) throw new ApiError(403, 'Employee must be linked to user to view leaves');
-    req.query.employeeId = (await require('../models/Employee').findById(user.employee)).empId;
+    // use already-required Employee model
+    const empDoc = await Employee.findById(user.employee);
+    if (!empDoc) throw new ApiError(404, 'Employee profile not found');
+    req.query.employeeId = empDoc.empId;
   }
   return leaveCtrl.list(req, res, next);
 }));

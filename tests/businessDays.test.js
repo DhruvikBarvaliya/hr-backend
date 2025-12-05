@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
-const { countBusinessDays, listBusinessDays, dateToYMD } = require('../src/utils/businessDays');
+const {
+  countBusinessDays,
+  listBusinessDays,
+  dateToYMD,
+} = require('../src/utils/businessDays');
 const Holiday = require('../src/models/Holiday');
 
 describe('Business days util', () => {
@@ -7,7 +11,10 @@ describe('Business days util', () => {
     await mongoose.connect(process.env.MONGO_URI);
     await Holiday.deleteMany({});
     // seed one holiday: 2025-12-25
-    await Holiday.create({ name: 'Xmas', date: new Date('2025-12-25T00:00:00Z') });
+    await Holiday.create({
+      name: 'Xmas',
+      date: new Date('2025-12-25T00:00:00Z'),
+    });
   });
 
   afterAll(async () => {
@@ -18,7 +25,8 @@ describe('Business days util', () => {
   test('counts business days excluding holiday and weekend', async () => {
     // 24,25,26 Dec 2025 (assuming 26 is Friday? adjust to your calendar)
     const cnt = await countBusinessDays('2025-12-24', '2025-12-26');
-    // depending on actual weekday of 26 Dec, set expected; if 24 Wed,25 Thu holiday,26 Fri -> expect 2 (24 & 26)
+    // depending on actual weekday of 26 Dec, set expected;
+    // if 24 Wed,25 Thu holiday,26 Fri -> expect 2 (24 & 26)
     expect(typeof cnt).toBe('number');
     expect(cnt).toBeGreaterThanOrEqual(0);
   });

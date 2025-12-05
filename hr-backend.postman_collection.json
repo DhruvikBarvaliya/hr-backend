@@ -1,0 +1,256 @@
+{
+  "info": {
+    "name": "HR Backend - Example Collection",
+    "_postman_id": "hr-backend-example-collection",
+    "description": "Collection for HR backend (auth, employees, leaves, holidays, clients, accrual). Set environment variable {{baseUrl}} (e.g. http://localhost:4000). Login request stores token in environment variable 'token'.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"P@ssw0rd\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","register"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Login (store token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"P@ssw0rd\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.token) {",
+                  "    pm.environment.set('token', body.token);",
+                  "    console.log('token saved to environment');",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Create Employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empId\": \"E001\",\n  \"name\": \"Alice Example\",\n  \"email\": \"alice@example.com\",\n  \"designation\": \"Developer\",\n  \"department\": \"Engineering\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/employees", "host": ["{{baseUrl}}"], "path": ["api","v1","employees"] }
+          },
+          "response": []
+        },
+        {
+          "name": "List Employees",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/employees", "host": ["{{baseUrl}}"], "path": ["api","v1","employees"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Holidays",
+      "item": [
+        {
+          "name": "Create Holiday",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Company Day\",\n  \"date\": \"2026-01-26\",\n  \"description\": \"Example holiday\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/holidays", "host": ["{{baseUrl}}"], "path": ["api","v1","holidays"] }
+          },
+          "response": []
+        },
+        {
+          "name": "List Holidays",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/holidays", "host": ["{{baseUrl}}"], "path": ["api","v1","holidays"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Leaves",
+      "item": [
+        {
+          "name": "Apply Leave (employee)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"E001\",\n  \"type\": \"paid\",\n  \"startDate\": \"2026-02-10\",\n  \"endDate\": \"2026-02-10\",\n  \"halfDay\": false,\n  \"reason\": \"Personal\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/leaves/apply", "host": ["{{baseUrl}}"], "path": ["api","v1","leaves","apply"] }
+          },
+          "response": []
+        },
+        {
+          "name": "List Leaves (filter by employee)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leaves?employeeId=E001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","leaves"],
+              "query": [{ "key": "employeeId", "value": "E001" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resolve Leave (approve)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveId\": \"{{lastLeaveId}}\",\n  \"approve\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/leaves/resolve", "host": ["{{baseUrl}}"], "path": ["api","v1","leaves","resolve"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Resolve Leave (reject)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveId\": \"{{lastLeaveId}}\",\n  \"approve\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/leaves/resolve", "host": ["{{baseUrl}}"], "path": ["api","v1","leaves","resolve"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Run Accrual Now (admin/hr)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/leaves/accrue-now", "host": ["{{baseUrl}}"], "path": ["api","v1","leaves","accrue-now"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "Create Client",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Corp\",\n  \"username\": \"acme_user\",\n  \"password\": \"s3cr3t!\",\n  \"metadata\": { \"project\": \"Integration\" }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/clients", "host": ["{{baseUrl}}"], "path": ["api","v1","clients"] }
+          },
+          "response": []
+        },
+        {
+          "name": "List Clients",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/clients", "host": ["{{baseUrl}}"], "path": ["api","v1","clients"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Client Secret (admin only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/clients/{{clientId}}/secret", "host": ["{{baseUrl}}"], "path": ["api","v1","clients","{{clientId}}","secret"] }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "token", "value": "" },
+    { "key": "lastLeaveId", "value": "" },
+    { "key": "clientId", "value": "" }
+  ]
+}

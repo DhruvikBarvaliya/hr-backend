@@ -3,15 +3,26 @@ const bcrypt = require('bcryptjs');
 
 const { Schema } = mongoose;
 
-const UserSchema = new Schema({
-  name: { type: String, required: true, trim: true },
-  email: {
-    type: String, required: true, unique: true, lowercase: true, trim: true,
+const UserSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: { type: String, required: true },
+    role: {
+      type: String,
+      enum: ['admin', 'hr', 'manager', 'employee'],
+      default: 'employee',
+    },
+    employee: { type: Schema.Types.ObjectId, ref: 'Employee' }, // optional link to employee profile
   },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'hr', 'manager', 'employee'], default: 'employee' },
-  employee: { type: Schema.Types.ObjectId, ref: 'Employee' }, // optional link to employee profile
-}, { timestamps: true });
+  { timestamps: true },
+);
 
 // password hash
 UserSchema.pre('save', async function preSave(next) {

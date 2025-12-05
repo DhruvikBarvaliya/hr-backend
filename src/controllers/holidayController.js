@@ -10,13 +10,19 @@ exports.createHoliday = async (req, res) => {
   const { name, date, description } = req.body;
   // ensure uniqueness by date
   const y = new Date(date);
-  const start = new Date(Date.UTC(y.getUTCFullYear(), y.getUTCMonth(), y.getUTCDate()));
+  const start = new Date(
+    Date.UTC(y.getUTCFullYear(), y.getUTCMonth(), y.getUTCDate()),
+  );
   const end = new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1);
   const exists = await Holiday.findOne({ date: { $gte: start, $lte: end } });
   if (exists) throw new ApiError(400, 'Holiday already exists for this date');
 
   const holiday = await Holiday.create({ name, date: start, description });
-  logger.info('Holiday created: %s by %s', holiday._id, req.user?.email || 'system');
+  logger.info(
+    'Holiday created: %s by %s',
+    holiday._id,
+    req.user?.email || 'system',
+  );
   return res.status(201).json({ data: holiday });
 };
 
@@ -32,9 +38,14 @@ exports.updateHoliday = async (req, res) => {
   // if updating date, ensure no other holiday exists on that date
   if (payload.date) {
     const y = new Date(payload.date);
-    const start = new Date(Date.UTC(y.getUTCFullYear(), y.getUTCMonth(), y.getUTCDate()));
+    const start = new Date(
+      Date.UTC(y.getUTCFullYear(), y.getUTCMonth(), y.getUTCDate()),
+    );
     const end = new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1);
-    const conflict = await Holiday.findOne({ _id: { $ne: id }, date: { $gte: start, $lte: end } });
+    const conflict = await Holiday.findOne({
+      _id: { $ne: id },
+      date: { $gte: start, $lte: end },
+    });
     if (conflict) throw new ApiError(400, 'Another holiday already exists for this date');
     holiday.date = start;
   }
@@ -43,7 +54,11 @@ exports.updateHoliday = async (req, res) => {
   if (payload.description !== undefined) holiday.description = payload.description;
 
   await holiday.save();
-  logger.info('Holiday updated: %s by %s', holiday._id, req.user?.email || 'system');
+  logger.info(
+    'Holiday updated: %s by %s',
+    holiday._id,
+    req.user?.email || 'system',
+  );
   return res.json({ data: holiday });
 };
 
@@ -81,6 +96,9 @@ exports.listHolidays = async (req, res) => {
     q.date = { $gte: start, $lte: end };
   }
 
-  const items = await Holiday.find(q).sort({ date: 1 }).skip((page - 1) * limit).limit(Number(limit));
+  const items = await Holiday.find(q)
+    .sort({ date: 1 })
+    .skip((page - 1) * limit)
+    .limit(Number(limit));
   return res.json({ data: items });
 };
